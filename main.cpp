@@ -21,14 +21,13 @@ string get_site(const string& url) {
         domain = domain.substr(0, pos);
     }
 
-    // Split domain into parts
-    stringstream ss(domain);
-
     //remove www.
     if (domain.substr(0, 4) == "www.") {
         domain = domain.substr(4);
     }
 
+    // Split domain into parts
+    stringstream ss(domain);
     string part;
     vector<string> domainParts;
 
