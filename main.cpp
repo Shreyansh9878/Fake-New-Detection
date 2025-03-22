@@ -23,6 +23,12 @@ string get_site(const string& url) {
 
     // Split domain into parts
     stringstream ss(domain);
+
+    //remove www.
+    if (domain.substr(0, 4) == "www.") {
+        domain = domain.substr(4);
+    }
+
     string part;
     vector<string> domainParts;
 
@@ -30,15 +36,7 @@ string get_site(const string& url) {
         domainParts.push_back(part);
     }
 
-    // Handle domains with subdomains
-    if (domainParts.size() > 2) {
-        // For cases like www.example.com or news.example.co.uk
-        domain = domainParts[1];
-    } else {
-        // For domains like example.com or example.co.uk
-        domain = domainParts[0];
-    }
-
+    domain = domainParts[0];
     return domain;
 }
 
