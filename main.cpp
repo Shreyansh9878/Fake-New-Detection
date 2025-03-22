@@ -52,7 +52,9 @@ class Graph{
 private:
 public:
     void append(string site_name, Node* prev_node){
-        float score = get_score(site_name);
+        DataFrame data;
+        data.loadCSV("data.csv");
+        float score = data.getScore(site_name);
         Node* newNode = new Node(site_name, score);
 
         adj_list[newNode] = vector<Node*> {};

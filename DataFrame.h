@@ -58,16 +58,6 @@ public:
             std::cout << pair.first << " : " << pair.second << std::endl;
         }
     }
-
-    // Check if a site is fake based on a threshold
-    bool isFakeNews(const std::string& site, float threshold = 0.06) {
-        if (siteScores.find(site) != siteScores.end()) {
-            return siteScores[site] < threshold;
-        } else {
-            std::cerr << "Site not found: " << site << std::endl;
-            return false;
-        }
-    }
 };
 
 #endif // DATAFRAME_H
