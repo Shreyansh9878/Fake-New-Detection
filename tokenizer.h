@@ -60,7 +60,7 @@ private:
 const std::vector<std::string> Trie::stopWords = {
     "do", "the", "so", "at", "and", "when", "did", "they", "in", "does", "seem", 
     "beyond", "upon", "we", "ask", "about", "us", "such", "a", "of", "its", "for", 
-    "will", "it"
+    "will", "it","has","had"
 };
 
 std::vector<std::string> tokenize(const std::string& text, Trie& stopWordsTrie) {
