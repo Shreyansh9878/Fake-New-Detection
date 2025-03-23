@@ -1,13 +1,13 @@
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
 
-#include <iostream>
-#include <unordered_map>
 #include <string>
 #include <vector>
-#include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 #include <algorithm>
 #include <cctype>
+#include <sstream>
 
 class TrieNode {
 public:
@@ -18,69 +18,71 @@ public:
 };
 
 class Trie {
-private:
-    TrieNode* root;
-
-    void deleteTrie(TrieNode* node) {
-        if (!node) return;
-        for (auto& pair : node->children) {
-            deleteTrie(pair.second);
-        }
-        delete node;
-    }
-
 public:
     Trie() {
         root = new TrieNode();
-    }
-
-    ~Trie() {
-        deleteTrie(root);
+        // Insert all stop words into the Trie
+        for (const std::string& word : stopWords) {
+            insert(word);
+        }
     }
 
     void insert(const std::string& word) {
-        TrieNode* current = root;
-        for (char c : word) {
-            char lowerC = std::tolower(c); // Convert to lowercase
-            if (!current->children[lowerC]) {
-                current->children[lowerC] = new TrieNode();
+        TrieNode* node = root;
+        for (char ch : word) {
+            if (node->children.find(ch) == node->children.end()) {
+                node->children[ch] = new TrieNode();
             }
-            current = current->children[lowerC];
+            node = node->children[ch];
         }
-        current->isEndOfWord = true;
+        node->isEndOfWord = true;
     }
 
     bool search(const std::string& word) {
-        TrieNode* current = root;
-        for (char c : word) {
-            char lowerC = std::tolower(c); // Convert to lowercase
-            if (!current->children.count(lowerC))
+        TrieNode* node = root;
+        for (char ch : word) {
+            if (node->children.find(ch) == node->children.end()) {
                 return false;
-            current = current->children[lowerC];
-        }
-        return current->isEndOfWord;
-    }
-
-    std::vector<std::string> tokenizeAndInsert(const std::string& text) {
-        std::vector<std::string> tokens;
-        std::stringstream ss(text);
-        std::string word;
-        while (ss >> word) {
-            // Remove punctuation from the beginning and end of the word
-            word.erase(word.begin(), std::find_if(word.begin(), word.end(), [](unsigned char ch)) {
-                return !std::ispunct(ch);
-            });
-            word.erase(std::find_if(word.rbegin(), word.rend(), [](unsigned char ch) {
-                return !std::ispunct(ch);
-            }).base(), word.end());
-
-            if (!word.empty()) {
-                insert(word);
-                tokens.push_back(word);
             }
+            node = node->children[ch];
         }
-        return tokens;
+        return node != nullptr && node->isEndOfWord;
     }
+
+    // List of stop words
+    static const std::vector<std::string> stopWords;
+
+private:
+    TrieNode* root;
 };
 
-#endif
+// Define the list of stop words
+const std::vector<std::string> Trie::stopWords = {
+    "do", "the", "so", "at", "and", "when", "did", "they", "in", "does", "seem", 
+    "beyond", "upon", "we", "ask", "about", "us", "such", "a", "of", "its", "for", 
+    "will", "it"
+};
+
+std::vector<std::string> tokenize(const std::string& text, Trie& stopWordsTrie) {
+    std::vector<std::string> tokens;
+    std::stringstream ss(text);
+    std::string token;
+    std::unordered_set<std::string> uniqueTokens;
+
+    while (ss >> token) {
+        // Remove punctuation
+        token.erase(std::remove_if(token.begin(), token.end(), ::ispunct), token.end());
+        // Convert to lowercase
+        std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+
+        // Check if the token is a stop word or already added
+        if (!stopWordsTrie.search(token) && uniqueTokens.find(token) == uniqueTokens.end()) {
+            tokens.push_back(token);
+            uniqueTokens.insert(token);
+        }
+    }
+
+    return tokens;
+}
+
+#endif // TOKENIZER_H
