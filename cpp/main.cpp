@@ -83,7 +83,7 @@ private:
         if (prev_node == NULL){
             newNode->depth = 0;
             start_node = newNode;
-            return;
+            return newNode;
         }
         
         //update depth
