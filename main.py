@@ -4,12 +4,66 @@ import heapq
 import re
 from collections import defaultdict
 from urllib.parse import urlparse
+import streamlit as st
+import random
 
 import Tokenizer_Trie as tk_t
 import web_scrapper as ws
 
 DEPTH_THRESHOLD = 5
 INFLUENCE = 0.75
+
+# Custom Styling
+st.markdown("""
+    <style>
+    .main-title {
+        text-align: center;
+        font-size: 42px;
+        color: #2C3E50;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .input-box {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .score-box {
+        text-align: center;
+        font-size: 90px;
+        font-weight: bold;
+        color: #E74C3C;
+        background-color: #FADBD8;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        margin-top: 20px;
+    }
+    .related-sites-container {
+        margin-top: 20px;
+    }
+    .related-sites {
+        background-color: #ECF0F1;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        margin: 10px 0;
+        font-size: 18px;
+        transition: transform 0.2s;
+    }
+    .related-sites:hover {
+        transform: scale(1.02);
+    }
+    .related-sites a {
+        font-weight: bold;
+        text-decoration: none;
+        color: #2980B9;
+    }
+    .related-sites a:hover {
+        color: #E74C3C;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 
 def get_site(url):
     parsed_url = urlparse(url)
@@ -151,15 +205,24 @@ class Graph:
     
     def __del__(self):
         self.clear_graph()
-
+        
 if __name__ == "__main__":
-    url = input("Enter URL to news: ")
-    graph = Graph()
-    graph.create(url)
-    final_score = graph.get_score()
-    top_sites = graph.get_top_sites()
-    
-    print(f"Trust Score: {final_score}")
-    print("You can get the most trusted information from:")
-    for site, score in top_sites:
-        print(f"{site} {score:.2f}")
+    st.markdown("<div class='main-title'>🌐 URL Scoring App 🚀</div>", unsafe_allow_html=True)
+
+    url = st.text_input("🔍 Enter a URL:")
+
+    if url:
+        graph = Graph()
+        graph.create(url)
+        final_score = graph.get_score()
+        top_sites = graph.get_top_sites()
+
+        st.markdown(f"<div class='score-box'>{final_score}%</div>", unsafe_allow_html=True)
+        
+        st.write("## 🔗 Related Sites")
+        st.markdown("<div class='related-sites-container'>", unsafe_allow_html=True)
+
+        for site_url, site_score in top_sites:
+            st.markdown(f"<div class='related-sites'>🔗 <a href='{site_url}' target='_blank'>{site_url}</a> - {site_score}%</div>", unsafe_allow_html=True)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
