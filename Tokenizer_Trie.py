@@ -4,14 +4,14 @@ from nltk.corpus import stopwords
 # from sklearn.feature_extraction.text import TfidfVectorizer
 
 class TrieNode:
-    def _init_(self):
+    def __init__(self):
         self.children = {}
         self.is_end_of_word = False
-        self.num_words = 0
 
 class Trie:
-    def _init_(self, data):
+    def __init__(self, data):
         self.root = TrieNode()
+        self.num_words = 0
 
         # Insert all stop words into the Trie
         for word in data:
