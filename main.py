@@ -253,10 +253,41 @@ if __name__ == "__main__":
     st.title("📰 News Trust")
     st.markdown("Analyze the trustworthiness of a news article using graph-based insights.")
 
+    st.sidebar.title("📘 About News Trust")
+    st.sidebar.markdown(
+         """
+        **News Trust** is an open-source Streamlit app designed to assess the **credibility of news articles** using **graph-based analysis**.
+
+        🧠 **How it works**  
+        - Analyzes **citations** and cross-references in the article  
+        - Detects **content similarity** with reputable sources  
+        - Uses **PageRank** over a trust graph to score trustworthiness  
+        - Automatically suggests external corroborations when references are missing  
+
+        🚀 **Why use it?**  
+        - Combat misinformation with data-backed trust scores  
+        - Gain visual insight into how reliable an article is  
+        - Ideal for researchers, journalists, and critical readers
+
+        👨‍💻 **Project Details**  
+    🛠️ **Authors**  
+    - [Shreyansh Agarwal](https://github.com/Shreyansh9878)  
+    - [Malav Parekh](https://github.com/b23me1029)  
+    - [Ishan Rajpurohit](https://github.com/ishanrajpurohit-iitj)
+    - [Kumar Harsh](https://github.com/kumarharsh24)
+
+    💻 **GitHub**: [github.com/Shreyansh9878/News-Trust-Model](https://github.com/Shreyansh9878/News-Trust-Model)  
+    📬 **Contact**: [2shreyansh@gmail.com]  
+        ---
+        🧩 *Built with [Streamlit](https://streamlit.io), powered by Python, and driven by trust in journalism.*  
+        🌐 *If you like it, give it a ⭐ on GitHub and share with your community!*
+        """
+    )
+
     if st.session_state.get("reset_url_input", False):
         st.session_state.news_url_input = ""
         st.session_state.reset_url_input = False
-
+    
     # Input
     url = st.text_input("🔗 Enter a news article URL:", key="news_url_input")
 
