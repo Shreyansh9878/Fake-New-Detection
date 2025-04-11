@@ -1,10 +1,25 @@
 import requests
 from bs4 import BeautifulSoup
-import re
 from fake_useragent import UserAgent
-from googlesearch import search
+from gnews import GNews
 import urllib.parse
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import time
+
+def is_valid_url(url):
+    return isinstance(url, str) and url.startswith(('http://', 'https://'))
+
+def get_site(url):
+    if is_valid_url(url):
+        parsed_url = urllib.parse.urlparse(url)
+        domain = parsed_url.netloc
+        if domain.startswith("www."):
+            domain = domain[4:]
+        return domain.split('.')[0].lower()
+    
+    else:
+        return ""
 
 def get_random_user_agent():
     try:
@@ -24,7 +39,8 @@ def extract_external_citations(soup, main_content, base_url):
         link_domain = urllib.parse.urlparse(full_link).netloc.replace("www.", "")
 
         if len(text) > 3 and base_domain not in link_domain and link_domain:
-            citations.append((text, full_link))
+            if is_valid_url(full_link):
+                citations.append(full_link)
     
     return citations
 
@@ -38,53 +54,88 @@ def scrape_news(url):
     }
 
     response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        raise LookupError("Failed to retrieve page")
 
-    soup = BeautifulSoup(response.text, 'html.parser')
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Remove noise
-    for tag in soup(['script', 'style', 'video', 'iframe', 'source', 'nav', 'footer', 'aside']):
-        tag.decompose()
+        # Remove noise
+        for tag in soup(['script', 'style', 'video', 'iframe', 'source', 'nav', 'footer', 'aside']):
+            tag.decompose()
 
-    # Headline
-    headline = soup.title.string.strip() if soup.title else "No title found"
+        # Headline
+        headline = soup.title.string.strip() if soup.title else ""
 
-    # Main content
-    main_content = soup.find('article') or soup.find('main') or soup.body
-    if not main_content:
-        return {"headline": headline, "content": "", "citations": []}
+        # Main content
+        main_content = soup.find('article') or soup.find('main') or soup.body
+        if not main_content:
+            return {"headline": headline, "content": "", "citations": []}
 
-    text_content = main_content.get_text(separator='\n', strip=True)
-    if not text_content.strip():
-        return {"headline": headline, "content": "", "citations": []}
+        text_content = main_content.get_text(separator='\n', strip=True)
+        if not text_content.strip():
+            return {"headline": headline, "content": "", "citations": []}
 
-    # Citations
-    citations = extract_external_citations(soup, main_content, url)
+        # Citations
+        citations = extract_external_citations(soup, main_content, url)
+        for cit in citations:
+            if (get_site(cit) == get_site(url)):
+                citations.remove(cit)
 
-    return {
-        "headline": headline,
-        "content": text_content,
-        "citations": citations
-    }
-
-def find_news_sources(news_title, num_results=10):
-    query = f'"{news_title}"'  # Using quotes for exact match search
-    results = search(query, num_results=num_results)
-    time.sleep(2)
+        return {
+            "headline": headline,
+            "content": text_content,
+            "citations": citations
+        }
     
-    sources = []
-    for url in results:
-        sources.append(url)
+    else:
+        return {"headline": "", "content": "", "citations": []}
 
-    return sources
+def get_final_url_selenium(input_url):
+    # Set up headless Chrome
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    
+    driver = webdriver.Chrome(options=options)
+    
+    try:
+        driver.get(input_url)
+        time.sleep(5)  # Allow time for redirect
+        
+        final_url = driver.current_url
+        return final_url
+    finally:
+        driver.quit()
 
-def get_page(url):
+def find_news_sources(news_title, num_results=5):
+    google_news = GNews(language='en', max_results=num_results)
+    results = google_news.get_news(news_title)
+
+    clean_urls = []
+    if results:
+        for article in results:
+            try:
+                clean_url = get_final_url_selenium(article["url"])
+                if clean_url:
+                    clean_urls.append(clean_url)
+            except Exception as e:
+                continue
+        
+        return clean_urls
+    
+    else:
+        return []
+
+
+def get_page(url, original_flag = False):
     data = scrape_news(url)
-    flag = True
+    flag = False
     
-    if len(data["citations"]) == 0:
-        data["citations"] = find_news_sources(data["headline"])
-        flag = True
-
+    if not original_flag and len(data["citations"]) == 0:
+            data["citations"] = find_news_sources(data["headline"])
+            flag = True
+    
+    elif len(data["citations"]) == 0:
+            flag = True
+        
     return data, flag
