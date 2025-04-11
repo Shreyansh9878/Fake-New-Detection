@@ -3,6 +3,7 @@ import pandas as pd
 import heapq
 from collections import defaultdict
 from urllib.parse import urlparse
+import streamlit as st
 import Tokenizer_Trie as tk_t
 import web_scrapper as ws
 
@@ -184,11 +185,48 @@ class Graph:
         self.clear_graph()
 
 if __name__ == "__main__":
-    url = input("Enter URL:")
-    graph = Graph()
-    graph.create(url)
+    st.set_page_config(page_title="News Trust", layout="wide")
+    st.title("📰 News Trust")
+    st.markdown("Analyze the trustworthiness of a news article using graph-based insights.")
 
-    final_score = graph.get_score()
-    top_sites = graph.get_top_sites()
+    if st.session_state.get("reset_url_input", False):
+        st.session_state.news_url_input = ""
+        st.session_state.reset_url_input = False
+
+    # Input
+    url = st.text_input("🔗 Enter a news article URL:", key="news_url_input")
+
+    if "submitted" not in st.session_state:
+        st.session_state.submitted = False
+
+    if not st.session_state.submitted:
+        if url:  # Only proceed if user entered a URL
+            st.session_state.url = url
+            st.session_state.submitted = True
+            st.rerun()
     
-    print(final_score)
+    else:
+        url = st.session_state.url  # Pull back the URL safely
+        wait_placeholder = st.empty()
+        wait_placeholder.info("Processing... Please wait ⏳")
+        
+        graph = Graph()
+        graph.create(url)
+
+        final_score = graph.get_score()
+        top_sites = graph.get_top_sites()
+        graph.clear_graph()
+
+        wait_placeholder.empty()
+
+        st.markdown(f"### ✅ Final Trust Score: `{round(final_score, 2)*100}%`")
+        
+        st.markdown("### 🌐 Top Referenced Sites")
+        for site in top_sites:
+            st.markdown(f"- [{get_site(site[0])}]({site[0]}) — Score: **{round(site[1], 2)*100}%**")
+
+        if st.button("🔁 Analyze another URL"):
+            st.session_state.submitted = False
+            st.session_state.url = ""
+            st.session_state.reset_url_input = True
+            st.rerun()
