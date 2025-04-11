@@ -254,27 +254,26 @@ if __name__ == "__main__":
     st.markdown("Analyze the trustworthiness of a news article using graph-based insights.")
 
     st.sidebar.title("📘 About News Trust")
-    st.sidebar.markdown(
-         """
-        **News Trust** is an open-source Streamlit app designed to assess the **credibility of news articles** using **graph-based analysis**.
-        
-        ---
-        
-        🧠 **How it works**  
-        - Analyzes **citations** and cross-references in the article  
-        - Detects **content similarity** with reputable sources  
-        - Uses **PageRank** over a trust graph to score trustworthiness  
-        - Automatically suggests external corroborations when references are missing  
-        
-        ---
-        
-        🚀 **Why use it?**  
-        - Combat misinformation with data-backed trust scores  
-        - Gain visual insight into how reliable an article is  
+    st.sidebar.markdown("""
+    **News Trust** is an open-source Streamlit app designed to assess the **credibility of news articles** using **graph-based analysis**.
+    
+    ---
+    
+    🧠 **How it works**  
+    - Analyzes **citations** and cross-references in the article  
+    - Detects **content similarity** with reputable sources  
+    - Uses **PageRank** over a trust graph to score trustworthiness  
+    - Automatically suggests external corroborations when references are missing  
+    
+    ---
+    
+    🚀 **Why use it?**  
+    - Combat misinformation with data-backed trust scores  
+    - Gain visual insight into how reliable an article is  
 
-        ---
+    ---
 
-        👨‍💻 **Project Details**  
+    👨‍💻 **Project Details**  
     🛠️ **Authors**  
     - [Shreyansh Agarwal](https://github.com/Shreyansh9878)  
     - [Malav Parekh](https://github.com/b23me1029)  
@@ -285,22 +284,22 @@ if __name__ == "__main__":
 
     💻 **GitHub**: [github.com/Shreyansh9878/News-Trust-Model](https://github.com/Shreyansh9878/News-Trust-Model)  
     📬 **Contact**: [2shreyansh@gmail.com]  
-        ---
-        🧩 *Built with [Streamlit](https://streamlit.io), powered by Python, and driven by trust in journalism.*  
-        🌐 *If you like it, give it a ⭐ on GitHub and share with your community!*
+    
+    ---
+    🧩 *Built with [Streamlit](https://streamlit.io), powered by Python, and driven by trust in journalism.*  
+    🌐 *If you like it, give it a ⭐ on GitHub and share with your community!*
 
-        ---
+    ---
 
-        ### ⚠️ Disclaimer
+    ### ⚠️ Disclaimer
 
-        - The dataset used in this project may contain inaccuracies or biases and should not be considered a definitive source of truth.
-        - Web scraping is used to extract citation and content data; however, some websites prohibit automated access in their Terms of Service. Users are responsible for ensuring compliance with such policies.
-        - This tool is intended for **research and educational purposes only**.
-        - The trust scores and graph-based insights are **automated estimations**, not verified facts.
-        - The authors are not responsible for any consequences arising from the use of this tool.
-        - By using this tool, you acknowledge that you understand and accept these terms.
-        """
-    )
+    - The dataset used in this project may contain inaccuracies or biases and should not be considered a definitive source of truth.
+    - Web scraping is used to extract citation and content data; however, some websites prohibit automated access in their Terms of Service. Users are responsible for ensuring compliance with such policies.
+    - This tool is intended for **research and educational purposes only**.
+    - The trust scores and graph-based insights are **automated estimations**, not verified facts.
+    - The authors are not responsible for any consequences arising from the use of this tool.
+    - By using this tool, you acknowledge that you understand and accept these terms.
+""")
 
     if st.session_state.get("reset_url_input", False):
         st.session_state.news_url_input = ""
