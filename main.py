@@ -51,6 +51,86 @@ class Graph:
         self.start_node = None
         self.trie_obj = None
         
+    def __load_csv(self, path):
+        data = pd.read_csv(path)
+        columns = data.columns.tolist()
+        data = data.set_index(columns[0])
+        return data
+    
+    def __get_score_from_data(self, site_name):
+        data = self.__load_csv("data.csv")
+        if site_name in data.index:
+            return data.loc[site_name.lower(), "Scores"]
+        else:
+            return 0.5
+    
+    def __append(self, site_name, url, prev_node=None, edge_weight=0):
+        # get score from data.csv
+        score = self.__get_score_from_data(site_name)
+
+        # create a node, make a connection list from site and update the list of sites
+        new_node = GraphNode(site_name, round(score,2))
+        self.adj_list[new_node] = []
+        self.list_of_sites[site_name] = Site(score, url, new_node, edge_weight)
+        
+        if prev_node is None:
+            new_node.depth = 0
+            self.start_node = new_node
+        else:
+            new_node.depth = prev_node.depth + 1
+            self.adj_list[prev_node].append((new_node, edge_weight))
+
+        return new_node
+    
+    def __create_graph(self, url, prev_node=None, original_flag = False):
+        if not is_valid_url(url):
+            return
+        
+        else:
+            site_name = get_site(url)
+            
+            if site_name in self.list_of_sites:
+                flg = False
+                for edge in self.adj_list[prev_node]:
+                    if edge[0].site_name == site_name or site_name == prev_node.site_name:
+                        flg = True
+                        break
+                if not flg:
+                    self.adj_list[prev_node].append((self.list_of_sites[site_name].node, self.list_of_sites[site_name].weight))
+                return
+            
+            else:
+                data, flag = ws.get_page(url, original_flag)
+                weight = 0.5
+                links=[]
+
+                if len(data["headline"])>0:
+                    links = data["citations"]
+                    content = data["content"]
+                    weight = tk_t.compare_data(self.trie_obj, content)
+                    
+                new_node = self.__append(site_name, url, prev_node, weight)
+                    
+                if new_node.depth < DEPTH_THRESHOLD and not (original_flag and len(links)==0):
+                    for link in links:
+                        self.__create_graph(link, new_node, original_flag)
+               
+    def create(self, url):
+        if not is_valid_url(url):
+            return
+        
+        data, flag = ws.get_page(url)
+        links = data["citations"]
+        original_news = data["content"]
+        self.trie_obj = tk_t.extract_keywords(original_news, True)
+
+        site_name = get_site(url)
+        new_node = self.__append(site_name, url, None, 1)
+        
+        for link in links:
+            if (get_site(link) != site_name):
+                self.__create_graph(link, new_node, flag)
+
 if __name__ == "__main__":
     url = input("Enter URL:")
     graph = Graph()
