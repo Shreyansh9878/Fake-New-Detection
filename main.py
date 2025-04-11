@@ -4,6 +4,8 @@ import heapq
 from collections import defaultdict
 from urllib.parse import urlparse
 import streamlit as st
+from st_link_analysis import st_link_analysis, NodeStyle, EdgeStyle
+from st_link_analysis.component.icons import SUPPORTED_ICONS
 import Tokenizer_Trie as tk_t
 import web_scrapper as ws
 
@@ -184,6 +186,68 @@ class Graph:
     def __del__(self):
         self.clear_graph()
 
+def graph_to_stlink_elements(graph: Graph):
+    """Convert Graph instance to st_link_analysis format"""
+    nodes = []
+    edges = []
+
+    for site_name, site_data in graph.list_of_sites.items():
+        node = site_data.node
+        nodes.append({
+            "data": {
+                "id": site_name,
+                "label": site_name,
+                "name": site_name,
+                "score": f"{round(node.score, 2)}"
+            }
+        })
+
+    id = 101
+    for src_node, neighbors in graph.adj_list.items():
+        src_name = src_node.site_name
+        for dst_node, weight in neighbors:
+            dst_name = dst_node.site_name
+            weight = f"{round(weight, 2)}"
+            id+=1
+            edges.append({
+                "data": {
+                    "id": id,
+                    "label": weight,
+                    "source": src_name,
+                    "target": dst_name,
+                    "weight": weight
+                }
+            })
+
+    return {"nodes": nodes, "edges": edges}
+
+def update_vis_graph(graph):
+    graph_data = graph_to_stlink_elements(graph)
+    nodes = graph_data["nodes"] 
+    edges = graph_data["edges"]
+   
+    # Define styles for nodes using real favicons
+    node_styles = []
+    for node in nodes:
+        site_name = node["data"]["label"]
+        node_styles.append(NodeStyle(site_name, "#309A60", "name", "news"))
+
+    # Use the actual weight as the edge label
+    edge_styles = []
+    for edge in edges:
+        weight = edge["data"]["label"]
+        edge_styles.append(EdgeStyle(weight, labeled=True, directed=True))
+
+    layout = {"name": "cose", "animate": "end", "nodeDimensionsIncludeLabels": False}
+
+    st_link_analysis(
+        elements={"nodes": nodes, "edges": edges},
+        node_styles=node_styles,
+        edge_styles=edge_styles,
+        layout=layout,
+        key="xyz"
+    )
+
 if __name__ == "__main__":
     st.set_page_config(page_title="News Trust", layout="wide")
     st.title("📰 News Trust")
@@ -212,6 +276,8 @@ if __name__ == "__main__":
         
         graph = Graph()
         graph.create(url)
+
+        update_vis_graph(graph)
 
         final_score = graph.get_score()
         top_sites = graph.get_top_sites()
