@@ -114,7 +114,31 @@ class Graph:
                 if new_node.depth < DEPTH_THRESHOLD and not (original_flag and len(links)==0):
                     for link in links:
                         self.__create_graph(link, new_node, original_flag)
-               
+            
+    def __dfs_visit(self, node, ancestor):
+        if node.T_node != -1:
+            return node.T_node
+        
+        ancestor[node] = True
+        score = INFLUENCE * node.score
+        propagated_score = 0
+        total_weights = 0
+        
+        for neighbor, weight in self.adj_list[node]:
+            if neighbor in ancestor:
+                total_weights += weight
+                propagated_score += neighbor.score
+            else:
+                total_weights += weight
+                propagated_score += self.__dfs_visit(neighbor, ancestor) * weight
+        
+        if total_weights:
+            score += (1 - INFLUENCE) * (propagated_score / total_weights)
+        
+        node.T_node = score
+        ancestor[node] = False
+        return score
+    
     def create(self, url):
         if not is_valid_url(url):
             return
@@ -130,6 +154,34 @@ class Graph:
         for link in links:
             if (get_site(link) != site_name):
                 self.__create_graph(link, new_node, flag)
+    
+    def get_score(self):
+        ancestor = {}
+        return self.__dfs_visit(self.start_node, ancestor)
+    
+    def get_top_sites(self):
+        pq = [(-site.node.T_node, site.url) for site in self.list_of_sites.values()]
+        heapq.heapify(pq)
+        
+        result = []
+        i = 5
+        while (i):
+            if not pq:
+                break
+            score, url = heapq.heappop(pq)
+            if url:
+                i-=1
+                result.append((url, -score))
+        
+        return result
+    
+    def clear_graph(self):
+        self.adj_list.clear()
+        self.list_of_sites.clear()
+        self.start_node = None
+    
+    def __del__(self):
+        self.clear_graph()
 
 if __name__ == "__main__":
     url = input("Enter URL:")
