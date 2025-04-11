@@ -288,6 +288,17 @@ if __name__ == "__main__":
         ---
         🧩 *Built with [Streamlit](https://streamlit.io), powered by Python, and driven by trust in journalism.*  
         🌐 *If you like it, give it a ⭐ on GitHub and share with your community!*
+
+        ---
+
+        ### ⚠️ Disclaimer
+
+        - The dataset used in this project may contain inaccuracies or biases and should not be considered a definitive source of truth.
+        - Web scraping is used to extract citation and content data; however, some websites prohibit automated access in their Terms of Service. Users are responsible for ensuring compliance with such policies.
+        - This tool is intended for **research and educational purposes only**.
+        - The trust scores and graph-based insights are **automated estimations**, not verified facts.
+        - The authors are not responsible for any consequences arising from the use of this tool.
+        - By using this tool, you acknowledge that you understand and accept these terms.
         """
     )
 
