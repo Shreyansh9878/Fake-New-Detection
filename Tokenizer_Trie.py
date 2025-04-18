@@ -55,6 +55,7 @@ def extract_keywords(news_text, to_Trie=False):
     
     # Remove stopwords and fillers
     filtered_words = [word for word in words if word not in remove_words]
+    unique_words = list(set(filtered_words))
     
     # Convert list back to cleaned text for TF-IDF processing
     # cleaned_text = " ".join(filtered_words)
@@ -71,9 +72,9 @@ def extract_keywords(news_text, to_Trie=False):
     # ranked_words = sorted(zip(feature_names, scores), key=lambda x: x[1], reverse=True)
     
     if (to_Trie):
-        return Trie(filtered_words)
+        return Trie(unique_words)
     else:
-        return filtered_words
+        return unique_words
 
 def compare_data(Trie_obj, text):
     word_list = extract_keywords(text)

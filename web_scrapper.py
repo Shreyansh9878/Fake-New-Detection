@@ -107,7 +107,7 @@ def get_final_url_selenium(input_url):
     finally:
         driver.quit()
 
-def find_news_sources(news_title, num_results=5):
+def find_news_sources(news_title, num_results=8):
     google_news = GNews(language='en', max_results=num_results)
     results = google_news.get_news(news_title)
 
