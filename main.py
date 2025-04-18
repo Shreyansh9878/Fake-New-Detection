@@ -53,6 +53,7 @@ class Graph:
         self.list_of_sites = {}
         self.start_node = None
         self.trie_obj = None
+        self.Web_Search_Flag = False
         
     def __load_csv(self, path):
         data = pd.read_csv(path)
@@ -85,7 +86,7 @@ class Graph:
 
         return new_node
     
-    def __create_graph(self, url, prev_node=None, original_flag = False):
+    def __create_graph(self, url, prev_node=None):
         if not is_valid_url(url):
             return
         
@@ -103,7 +104,8 @@ class Graph:
                 return
             
             else:
-                data, flag = ws.get_page(url, original_flag)
+                data, flag = ws.get_page(url, self.Web_Search_Flag)
+                self.Web_Search_Flag = flag or self.Web_Search_Flag
                 weight = 0.5
                 links=[]
 
@@ -114,9 +116,9 @@ class Graph:
                 links = data["citations"]
                 new_node = self.__append(site_name, url, prev_node, weight)
                     
-                if new_node.depth < DEPTH_THRESHOLD and not (original_flag and len(links)==0):
+                if new_node.depth < DEPTH_THRESHOLD and not (self.Web_Search_Flag and len(links)==0):
                     for link in links:
-                        self.__create_graph(link, new_node, original_flag)
+                        self.__create_graph(link, new_node)
             
     def __dfs_visit(self, node, ancestor):
         if node.T_node != -1:
@@ -147,6 +149,7 @@ class Graph:
             return
         
         data, flag = ws.get_page(url)
+        self.Web_Search_Flag = flag or self.Web_Search_Flag
         links = data["citations"]
         original_news = data["content"]
         self.trie_obj = tk_t.extract_keywords(original_news, True)
@@ -156,7 +159,7 @@ class Graph:
         
         for link in links:
             if (get_site(link) != site_name):
-                self.__create_graph(link, new_node, flag)
+                self.__create_graph(link, new_node)
     
     def get_score(self):
         ancestor = {}
@@ -249,97 +252,104 @@ def update_vis_graph(graph):
     )
 
 if __name__ == "__main__":
-    st.set_page_config(page_title="News Trust", layout="wide")
-    st.title("📰 News Trust")
-    st.markdown("Analyze the trustworthiness of a news article using graph-based insights.")
+    url = "https://www.bbc.com/news/articles/c20x5xn1g92o"
+    graph = Graph()
+    graph.create(url)
 
-    st.sidebar.title("📘 About News Trust")
-    st.sidebar.markdown("""
-    **News Trust** is an open-source Streamlit app designed to assess the **credibility of news articles** using **graph-based analysis**.
+    print(graph.get_score())
+    top_sites = graph.get_top_sites()
+# if __name__ == "__main__":
+#     st.set_page_config(page_title="News Trust", layout="wide")
+#     st.title("📰 News Trust")
+#     st.markdown("Analyze the trustworthiness of a news article using graph-based insights.")
+
+#     st.sidebar.title("📘 About News Trust")
+#     st.sidebar.markdown("""
+#     **News Trust** is an open-source Streamlit app designed to assess the **credibility of news articles** using **graph-based analysis**.
     
-    ---
+#     ---
     
-    🧠 **How it works**  
-    - Analyzes **citations** and cross-references in the article  
-    - Detects **content similarity** with reputable sources  
-    - Uses **PageRank** over a trust graph to score trustworthiness  
-    - Automatically suggests external corroborations when references are missing  
+#     🧠 **How it works**  
+#     - Analyzes **citations** and cross-references in the article  
+#     - Detects **content similarity** with reputable sources  
+#     - Uses **PageRank** over a trust graph to score trustworthiness  
+#     - Automatically suggests external corroborations when references are missing  
     
-    ---
+#     ---
     
-    🚀 **Why use it?**  
-    - Combat misinformation with data-backed trust scores  
-    - Gain visual insight into how reliable an article is  
+#     🚀 **Why use it?**  
+#     - Combat misinformation with data-backed trust scores  
+#     - Gain visual insight into how reliable an article is  
 
-    ---
+#     ---
 
-    👨‍💻 **Project Details**  
-    🛠️ **Authors**  
-    - [Shreyansh Agarwal](https://github.com/Shreyansh9878)  
-    - [Malav Parekh](https://github.com/b23me1029)  
-    - [Ishan Rajpurohit](https://github.com/ishanrajpurohit-iitj)
-    - [Kumar Harsh](https://github.com/kumarharsh24)
+#     👨‍💻 **Project Details**  
+#     🛠️ **Authors**  
+#     - [Shreyansh Agarwal](https://github.com/Shreyansh9878)  
+#     - [Malav Parekh](https://github.com/b23me1029)  
+#     - [Ishan Rajpurohit](https://github.com/ishanrajpurohit-iitj)
+#     - [Kumar Harsh](https://github.com/kumarharsh24)
 
-    ---
+#     ---
 
-    💻 **GitHub**: [github.com/Shreyansh9878/News-Trust-Model](https://github.com/Shreyansh9878/News-Trust-Model)  
-    📬 **Contact**: [2shreyansh@gmail.com]  
+#     💻 **GitHub**: [github.com/Shreyansh9878/News-Trust-Model](https://github.com/Shreyansh9878/News-Trust-Model)  
+#     📬 **Contact**: [2shreyansh@gmail.com]  
     
-    ---
-    🧩 *Built with [Streamlit](https://streamlit.io), powered by Python, and driven by trust in journalism.*  
-    🌐 *If you like it, give it a ⭐ on GitHub and share with your community!*
+#     ---
+#     🧩 *Built with [Streamlit](https://streamlit.io), powered by Python, and driven by trust in journalism.*  
+#     🌐 *If you like it, give it a ⭐ on GitHub and share with your community!*
 
-    ---
+#     ---
 
-    ### ⚠️ Disclaimer
+#     ### ⚠️ Disclaimer
 
-    - The dataset used in this project may contain inaccuracies or biases and should not be considered a definitive source of truth.
-    - Web scraping is used to extract citation and content data; however, some websites prohibit automated access in their Terms of Service. Users are responsible for ensuring compliance with such policies.
-    - The trust scores and graph-based insights are **automated estimations**, not verified facts.
-    - The authors are not responsible for any consequences arising from the use of this tool.
-    - By using this tool, you acknowledge that you understand and accept these terms.
-""")
+#     - The dataset used in this project may contain inaccuracies or biases and should not be considered a definitive source of truth.
+#     - Web scraping is used to extract citation and content data; however, some websites prohibit automated access in their Terms of Service. Users are responsible for ensuring compliance with such policies.
+#     - The trust scores and graph-based insights are **automated estimations**, not verified facts.
+#     - The authors are not responsible for any consequences arising from the use of this tool.
+#     - By using this tool, you acknowledge that you understand and accept these terms.
+# """)
 
-    if st.session_state.get("reset_url_input", False):
-        st.session_state.news_url_input = ""
-        st.session_state.reset_url_input = False
+#     if st.session_state.get("reset_url_input", False):
+#         st.session_state.news_url_input = ""
+#         st.session_state.reset_url_input = False
     
-    # Input
-    url = st.text_input("🔗 Enter a news article URL:", key="news_url_input")
+#     # Input
+#     url = st.text_input("🔗 Enter a news article URL:", key="news_url_input")
 
-    if "submitted" not in st.session_state:
-        st.session_state.submitted = False
+#     if "submitted" not in st.session_state:
+#         st.session_state.submitted = False
 
-    if not st.session_state.submitted:
-        if url:  # Only proceed if user entered a URL
-            st.session_state.url = url
-            st.session_state.submitted = True
-            st.rerun()
+#     if not st.session_state.submitted:
+#         if url:  # Only proceed if user entered a URL
+#             st.session_state.url = url
+#             st.session_state.submitted = True
+#             st.rerun()
     
-    else:
-        url = st.session_state.url  # Pull back the URL safely
-        wait_placeholder = st.empty()
-        wait_placeholder.info("Processing... Please wait ⏳")
+#     else:
+#         url = st.session_state.url  # Pull back the URL safely
+#         wait_placeholder = st.empty()
+#         wait_placeholder.info("Processing... Please wait ⏳")
         
-        graph = Graph()
-        graph.create(url)
+#         graph = Graph()
+#         graph.create(url)
 
-        update_vis_graph(graph)
+#         update_vis_graph(graph)
 
-        final_score = graph.get_score()
-        top_sites = graph.get_top_sites()
-        graph.clear_graph()
+#         final_score = graph.get_score()
+#         top_sites = graph.get_top_sites()
+#         graph.clear_graph()
 
-        wait_placeholder.empty()
+#         wait_placeholder.empty()
 
-        st.markdown(f"### ✅ Final Trust Score: `{round(final_score, 2)*100}%`")
+#         st.markdown(f"### ✅ Final Trust Score: `{round(final_score, 2)*100}%`")
         
-        st.markdown("### 🌐 Top Referenced Sites")
-        for site in top_sites:
-            st.markdown(f"- [{get_site(site[0])}]({site[0]}) — Score: **{round(site[1], 2)*100}%**")
+#         st.markdown("### 🌐 Top Referenced Sites")
+#         for site in top_sites:
+#             st.markdown(f"- [{get_site(site[0])}]({site[0]}) — Score: **{round(site[1], 2)*100}%**")
 
-        if st.button("🔁 Analyze another URL"):
-            st.session_state.submitted = False
-            st.session_state.url = ""
-            st.session_state.reset_url_input = True
-            st.rerun()
+#         if st.button("🔁 Analyze another URL"):
+#             st.session_state.submitted = False
+#             st.session_state.url = ""
+#             st.session_state.reset_url_input = True
+#             st.rerun()
