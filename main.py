@@ -108,10 +108,10 @@ class Graph:
                 links=[]
 
                 if len(data["headline"])>0:
-                    links = data["citations"]
                     content = data["content"]
                     weight = tk_t.compare_data(self.trie_obj, content)
-                    
+                
+                links = data["citations"]
                 new_node = self.__append(site_name, url, prev_node, weight)
                     
                 if new_node.depth < DEPTH_THRESHOLD and not (original_flag and len(links)==0):

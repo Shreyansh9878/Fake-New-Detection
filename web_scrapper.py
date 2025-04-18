@@ -131,7 +131,7 @@ def get_page(url, original_flag = False):
     data = scrape_news(url)
     flag = False
     
-    if not original_flag and len(data["citations"]) == 0:
+    if (not original_flag) and (len(data["citations"]) == 0):
             data["citations"] = find_news_sources(data["headline"])
             flag = True
     
