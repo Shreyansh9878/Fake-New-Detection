@@ -63,6 +63,9 @@ def scrape_news(url):
             tag.decompose()
 
         # Headline
+        if headline == None:
+            headline = ''
+
         headline = soup.title.string.strip() if soup.title else ""
 
         # Main content
